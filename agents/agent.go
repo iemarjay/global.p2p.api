@@ -20,7 +20,8 @@ func New() *agent {
 func (a agent) Init(app gp2p.Gp2p) {
 	a.app = app
 	service := a.makeAgentService()
-	httpHandlers := http.New(service)
+	loginService := a.makeLogicService()
+	httpHandlers := http.New(service, loginService)
 	httpHandlers.Register(app.Router())
 }
 
@@ -28,12 +29,22 @@ func (a agent) makeAgentService() *services.AgentService {
 	notifier := notification.New()
 	wm := messages.NewWelcomeMessage(a.app.Env())
 
+	dataStore := a.makeDataStore()
+	service := services.NewAgentService(dataStore, notifier, wm)
+
+	return service
+}
+
+func (a agent) makeDataStore() *data.AgentStore {
 	db := a.app.Database()
 	db = db.Table("agent")
 
 	dataStore := data.NewAgentStore(db)
-	service := services.NewAgentService(dataStore, notifier, wm)
+	return dataStore
+}
 
-	return service
+func (a agent) makeLogicService() *services.LoginService {
+	store := a.makeDataStore()
+	return services.NewLoginService(store)
 }
 

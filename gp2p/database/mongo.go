@@ -61,6 +61,11 @@ func (db *MongoDatabase) FindOneByID(id primitive.ObjectID) *mongo.SingleResult 
 	return result
 }
 
+func (db *MongoDatabase) FindOne(filter interface{}) *mongo.SingleResult {
+	result := db.collection.FindOne(context.Background(), filter)
+	return result
+}
+
 func NewMongo(uri string, dbName string) *MongoDatabase {
 	m := &MongoDatabase{}
 	return m.Connect(uri, dbName)

@@ -30,3 +30,15 @@ func (a *AgentRegisterRequest) Validate() error {
 	return validator.New().Struct(a)
 }
 
+type AgentLoginRequest struct {
+	Identifier string `validate:"required" query:"identifier"`
+	Password string `validate:"required" query:"password"`
+}
+
+func (r *AgentLoginRequest) toAgentServiceData() *services.AgentServiceData {
+	return &services.AgentServiceData{
+		Email:    r.Identifier,
+		Phone:    r.Identifier,
+		Password: r.Password,
+	}
+}

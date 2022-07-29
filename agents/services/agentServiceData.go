@@ -30,6 +30,13 @@ func (asd *AgentServiceData) toAgentStoreData() *data.AgentStoreData {
 	}
 }
 
+func (asd *AgentServiceData) toFindByEmailOrPhoneFilter() *data.AgentStoreData {
+	return &data.AgentStoreData{
+		Email: asd.Email,
+		Phone: asd.Phone,
+	}
+}
+
 func (asd *AgentServiceData) ComparePassword(password string) bool {
 	return hash.Compare(password, asd.Password)
 }
