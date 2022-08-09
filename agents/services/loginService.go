@@ -3,48 +3,46 @@ package services
 import (
 	"errors"
 	"github.com/golang-jwt/jwt"
-	"global.p2p.api/agents/data"
+	"global.p2p.api/agents/dtos"
+	"global.p2p.api/agents/repositories"
+	"global.p2p.api/app/http"
+	"time"
 )
 
-type JwtClaim struct {
-	Id string `json:"id"`
-	jwt.StandardClaims
-}
-
 type LoginServiceData struct {
-	Token string            `json:"token"`
-	User  *AgentServiceData `json:"user"`
+	Token string         `json:"token"`
+	User  *dtos.AgentDto `json:"user"`
 }
 
 type LoginService struct {
-	store *data.AgentStore
+	store *repositories.AgentStore
 }
 
-func NewLoginService(database *data.AgentStore) *LoginService {
+func NewLoginService(database *repositories.AgentStore) *LoginService {
 	return &LoginService{store: database}
 }
 
-func (s LoginService) Login(data *AgentServiceData) (*LoginServiceData, error) {
-	filter := data.toFindByEmailOrPhoneFilter()
+func (s LoginService) Login(data *dtos.AgentDto) (*LoginServiceData, error) {
+	filter := data.ToFindByEmailOrPhoneFilter()
 
-	sdAgent, err := s.store.FindAgentByEmailOrPhone(filter.Email)
+	sdAgent, err := s.store.FindAgentByEmailOrPhone(filter)
 	if err != nil {
 		return nil, err
 	}
 
-	agent := newAgentServiceDataFromAgentStoreData(sdAgent)
+	agent := dtos.NewAgentServiceDataFromAgentStoreData(sdAgent)
 	if agent.ComparePassword(data.Password) == false {
 		return nil, errors.New("credential doesn't match record")
 	}
 
-	claims := &JwtClaim{
+	c := &http.JwtClaim{
 		Id: agent.ID,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * 72).Unix(),
+		},
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	t, err := c.ToSignJwtString()
 
-	// Generate encoded token and send it as response.
-	var t string
-	t, err = token.SignedString([]byte("secret"))
 	if err != nil {
 		return nil, err
 	}

@@ -2,27 +2,32 @@ package agents
 
 import (
 	"global.p2p.api/agents/adapters/messages"
-	"global.p2p.api/agents/data"
+	"global.p2p.api/agents/helpers"
 	"global.p2p.api/agents/ports/http"
+	"global.p2p.api/agents/repositories"
 	"global.p2p.api/agents/services"
-	"global.p2p.api/gp2p"
-	"global.p2p.api/gp2p/notification"
+	"global.p2p.api/app"
+	"global.p2p.api/app/notification"
 )
 
 type agent struct {
-	app gp2p.Gp2p
+	app app.Gp2p
 }
 
 func New() *agent {
 	return &agent{}
 }
 
-func (a agent) Init(app gp2p.Gp2p) {
+func (a agent) Init(app app.Gp2p) {
 	a.app = app
-	service := a.makeAgentService()
-	loginService := a.makeLogicService()
-	httpHandlers := http.New(service, loginService)
-	httpHandlers.Register(app.Router())
+
+	s := a.makeAgentService()
+	ls := a.makeLoginService()
+	vs := a.makeVerificationService()
+
+	httpHandlers := http.New(s, ls, vs)
+
+	httpHandlers.RegisterRoutes(app)
 }
 
 func (a agent) makeAgentService() *services.AgentService {
@@ -35,16 +40,24 @@ func (a agent) makeAgentService() *services.AgentService {
 	return service
 }
 
-func (a agent) makeDataStore() *data.AgentStore {
+func (a agent) makeDataStore() *repositories.AgentStore {
 	db := a.app.Database()
 	db = db.Table("agent")
 
-	dataStore := data.NewAgentStore(db)
+	dataStore := repositories.NewAgentStore(db)
 	return dataStore
 }
 
-func (a agent) makeLogicService() *services.LoginService {
+func (a agent) makeLoginService() *services.LoginService {
 	store := a.makeDataStore()
 	return services.NewLoginService(store)
+}
+
+func (a agent) makeVerificationService() *services.AgentVerificationService {
+	env := a.app.Env()
+	otp := helpers.Otp(env)
+	verificationMessage := messages.NewVerificationMessage(env, notification.New(), otp)
+	dataStore := a.makeDataStore()
+	return services.NewAgentVerificationService(dataStore, verificationMessage, otp)
 }
 

@@ -53,10 +53,15 @@ func (db MongoDatabase) Insert(data interface{}) (*mongo.SingleResult, error) {
 
 	insertedID := ior.InsertedID.(primitive.ObjectID)
 
-	return db.FindOneByID(insertedID), err
+	return db.findOneByID(insertedID), err
 }
 
-func (db *MongoDatabase) FindOneByID(id primitive.ObjectID) *mongo.SingleResult {
+func (db *MongoDatabase) FindOneByID(id string) *mongo.SingleResult {
+	objectId, _ := primitive.ObjectIDFromHex(id)
+	return db.findOneByID(objectId)
+}
+
+func (db *MongoDatabase) findOneByID(id primitive.ObjectID) *mongo.SingleResult {
 	result := db.collection.FindOne(context.Background(), bson.M{"_id": id})
 	return result
 }

@@ -2,7 +2,7 @@ package http
 
 import (
 	"github.com/go-playground/validator/v10"
-	"global.p2p.api/agents/services"
+	"global.p2p.api/agents/dtos"
 )
 
 
@@ -15,8 +15,8 @@ type AgentRegisterRequest struct {
 	Phone string `validate:"required,e164" query:"phone"`
 }
 
-func (a *AgentRegisterRequest) toAgentServiceData() *services.AgentServiceData {
-	return &services.AgentServiceData{
+func (a *AgentRegisterRequest) toAgentServiceData() *dtos.AgentDto {
+	return &dtos.AgentDto{
 		Name:     a.Name,
 		Nickname: a.Nickname,
 		Email:    a.Email,
@@ -35,8 +35,8 @@ type AgentLoginRequest struct {
 	Password string `validate:"required" query:"password"`
 }
 
-func (r *AgentLoginRequest) toAgentServiceData() *services.AgentServiceData {
-	return &services.AgentServiceData{
+func (r *AgentLoginRequest) toAgentServiceData() *dtos.AgentDto {
+	return &dtos.AgentDto{
 		Email:    r.Identifier,
 		Phone:    r.Identifier,
 		Password: r.Password,

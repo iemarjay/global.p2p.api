@@ -1,10 +1,10 @@
-package gp2p
+package app
 
 import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
-	database2 "global.p2p.api/gp2p/database"
-	"global.p2p.api/gp2p/http"
+	database2 "global.p2p.api/app/database"
+	"global.p2p.api/app/http"
 )
 
 type Gp2p struct {
@@ -26,7 +26,7 @@ func (app Gp2p) Env() *Env {
 	return app.env
 }
 
-func (app Gp2p) Router() *echo.Echo {
+func (app Gp2p) Echo() *echo.Echo {
 	return app.echo
 }
 

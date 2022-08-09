@@ -1,7 +1,7 @@
-package data
+package repositories
 
 import (
-	"global.p2p.api/gp2p/database"
+	"global.p2p.api/app/database"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -13,6 +13,10 @@ type AgentStoreData struct {
 	Phone    string `bson:"phone,omitempty"`
 	Password string `bson:"password,omitempty"`
 	Country  string `bson:"country,omitempty"`
+}
+
+func (asd AgentStoreData) toEmailOrPhoneFilter() bson.M {
+	return bson.M{"$or": []bson.M{{"email": asd.Email}, {"phone": asd.Phone}}}
 }
 
 type AgentStore struct {
@@ -40,9 +44,9 @@ func (s AgentStore) AddAgent(data *AgentStoreData) (*AgentStoreData, error) {
 	return agent, err
 }
 
-func (s AgentStore) FindAgentByEmailOrPhone(identifier string) (*AgentStoreData, error) {
+func (s AgentStore) FindAgentByEmailOrPhone(data *AgentStoreData) (*AgentStoreData, error) {
 	var agent = &AgentStoreData{}
-	filter := s.whereIdentifierIsEmailOrPhoneFilter(identifier)
+	filter := data.toEmailOrPhoneFilter()
 	cursor := s.database.FindOne(filter)
 
 	err := cursor.Decode(agent)
@@ -53,6 +57,12 @@ func (s AgentStore) FindAgentByEmailOrPhone(identifier string) (*AgentStoreData,
 	return agent, err
 }
 
-func (s AgentStore) whereIdentifierIsEmailOrPhoneFilter(identifier string) bson.M {
-	return bson.M{"$or": []bson.M{{"email": identifier}, {"phone": identifier}}}
+func (s AgentStore) Find(id string) (*AgentStoreData, error) {
+	var agent = &AgentStoreData{}
+	err := s.database.FindOneByID(id).Decode(agent)
+	if err != nil {
+		return nil, err
+	}
+
+	return agent, nil
 }

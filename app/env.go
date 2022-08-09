@@ -1,4 +1,4 @@
-package gp2p
+package app
 
 import "github.com/joho/godotenv"
 

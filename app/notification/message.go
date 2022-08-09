@@ -1,6 +1,6 @@
 package notification
 
-import "global.p2p.api/gp2p/notification/messages"
+import "global.p2p.api/app/notification/messages"
 
 type MailMessage interface {
 	Message
