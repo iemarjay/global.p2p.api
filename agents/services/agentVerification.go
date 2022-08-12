@@ -8,7 +8,7 @@ import (
 )
 
 type (
-	AgentVerificationService struct {
+	AgentVerification struct {
 		database            *repositories.AgentStore
 		verificationMessage  *messages.Verification
 		otp                 *helpers.OtpGenerator
@@ -21,15 +21,15 @@ type (
 )
 
 func NewAgentVerificationService(ds *repositories.AgentStore, vm *messages.Verification,
-	otp *helpers.OtpGenerator) *AgentVerificationService {
-	return &AgentVerificationService{
+	otp *helpers.OtpGenerator) *AgentVerification {
+	return &AgentVerification{
 		database:            ds,
 		verificationMessage:  vm,
 		otp:                 otp,
 	}
 }
 
-func (avs *AgentVerificationService) SendAgentVerificationCode(input *dtos.AgentVerificationDTO) error {
+func (avs *AgentVerification) SendAgentVerificationCode(input *dtos.AgentVerificationDTO) error {
 	sa, err := avs.database.Find(input.ID)
 	if err != nil {
 		return err
@@ -44,7 +44,7 @@ func (avs *AgentVerificationService) SendAgentVerificationCode(input *dtos.Agent
 	return nil
 }
 
-func (avs AgentVerificationService) VerifyAgent(input *dtos.AgentVerificationDTO) (error, *verificationError) {
+func (avs AgentVerification) VerifyAgent(input *dtos.AgentVerificationDTO) (error, *verificationError) {
 	sa, err := avs.database.Find(input.ID)
 	if err != nil {
 		return err, nil
@@ -63,7 +63,7 @@ func (avs AgentVerificationService) VerifyAgent(input *dtos.AgentVerificationDTO
 	return nil, nil
 }
 
-func (avs AgentVerificationService) validatePhoneToken(phone string, agent *dtos.AgentDto) string {
+func (avs AgentVerification) validatePhoneToken(phone string, agent *dtos.AgentDto) string {
 	var msg string
 	if phone == "" {
 		msg = ""
@@ -77,7 +77,7 @@ func (avs AgentVerificationService) validatePhoneToken(phone string, agent *dtos
 	return msg
 }
 
-func (avs AgentVerificationService) validateMailToken(agent *dtos.AgentDto, email string) string {
+func (avs AgentVerification) validateMailToken(agent *dtos.AgentDto, email string) string {
 	if email == "" {
 		return ""
 	}

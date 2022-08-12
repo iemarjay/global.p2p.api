@@ -24,13 +24,13 @@ func (a agent) Init(app app.Gp2p) {
 	s := a.makeAgentService()
 	ls := a.makeLoginService()
 	vs := a.makeVerificationService()
+	kyc := a.makeKycService()
 
-	httpHandlers := http.New(s, ls, vs)
-
-	httpHandlers.RegisterRoutes(app)
+	http.New(s, ls, vs, kyc).
+		RegisterRoutes(app)
 }
 
-func (a agent) makeAgentService() *services.AgentService {
+func (a agent) makeAgentService() *services.Agent {
 	notifier := notification.New()
 	wm := messages.NewWelcomeMessage(a.app.Env())
 
@@ -48,16 +48,22 @@ func (a agent) makeDataStore() *repositories.AgentStore {
 	return dataStore
 }
 
-func (a agent) makeLoginService() *services.LoginService {
+func (a agent) makeLoginService() *services.Login {
 	store := a.makeDataStore()
 	return services.NewLoginService(store)
 }
 
-func (a agent) makeVerificationService() *services.AgentVerificationService {
+func (a agent) makeVerificationService() *services.AgentVerification {
 	env := a.app.Env()
 	otp := helpers.Otp(env)
 	verificationMessage := messages.NewVerificationMessage(env, notification.New(), otp)
 	dataStore := a.makeDataStore()
 	return services.NewAgentVerificationService(dataStore, verificationMessage, otp)
+}
+
+func (a agent) makeKycService() *services.AgentKyc {
+	r := a.makeDataStore()
+	f := a.app.FileSystem()
+	return services.NewAgentKyc(f, r)
 }
 

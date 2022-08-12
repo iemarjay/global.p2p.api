@@ -6,11 +6,25 @@ type Env struct {
 	value map[string]string
 }
 
-func (env Env) Set(value map[string]string) {
+const APP_PORT = "APP_PORT"
+const APP_BASE_URL = "APP_BASE_URL"
+
+const PUBLIC_ROOT_DIR = "PUBLIC_ROOT_DIR"
+const PUBLIC_ROOT_DIR_VALUE = "resources/public"
+
+const PUBLIC_PATH_PREFIX = "PUBLIC_PATH_PREFIX"
+const PUBLIC_PATH_PREFIX_VALUE = "public"
+
+const DATABASE_URL = "DATABASE_URL"
+const DATABASE_NAME = "DATABASE_NAME"
+
+
+
+func (env *Env) Set(value map[string]string) {
 	env.value = value
 }
 
-func (env Env) GetOrDefault(key string, fail string) string {
+func (env *Env) GetOrDefault(key string, fail string) string {
 	if value, exists := env.value[key]; exists {
 		return value
 	}
@@ -18,7 +32,7 @@ func (env Env) GetOrDefault(key string, fail string) string {
 	return fail
 }
 
-func (env Env) Get(key string) string {
+func (env *Env) Get(key string) string {
 	if value, exists := env.value[key]; exists {
 		return value
 	}

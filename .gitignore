@@ -24,3 +24,6 @@ vendor/
 # Go workspace file
 go.work
 .env
+
+# user generated files
+resources/public/*

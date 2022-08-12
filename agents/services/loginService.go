@@ -14,15 +14,15 @@ type LoginServiceData struct {
 	User  *dtos.AgentDto `json:"user"`
 }
 
-type LoginService struct {
+type Login struct {
 	store *repositories.AgentStore
 }
 
-func NewLoginService(database *repositories.AgentStore) *LoginService {
-	return &LoginService{store: database}
+func NewLoginService(database *repositories.AgentStore) *Login {
+	return &Login{store: database}
 }
 
-func (s LoginService) Login(data *dtos.AgentDto) (*LoginServiceData, error) {
+func (s Login) Login(data *dtos.AgentDto) (*LoginServiceData, error) {
 	filter := data.ToFindByEmailOrPhoneFilter()
 
 	sdAgent, err := s.store.FindAgentByEmailOrPhone(filter)

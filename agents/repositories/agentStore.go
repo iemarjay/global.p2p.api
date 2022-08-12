@@ -1,22 +1,13 @@
 package repositories
 
 import (
+	"global.p2p.api/agents/dtos"
 	"global.p2p.api/app/database"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-type AgentStoreData struct {
-	ID       string `bson:"_id,omitempty"`
-	Name     string `bson:"name,omitempty"`
-	Nickname string `bson:"nickname,omitempty"`
-	Email    string `bson:"email,omitempty"`
-	Phone    string `bson:"phone,omitempty"`
-	Password string `bson:"password,omitempty"`
-	Country  string `bson:"country,omitempty"`
-}
-
-func (asd AgentStoreData) toEmailOrPhoneFilter() bson.M {
-	return bson.M{"$or": []bson.M{{"email": asd.Email}, {"phone": asd.Phone}}}
+type Kyc interface {
+	UpdateKyc(agentId string, input *dtos.KycDto) (*dtos.AgentDto, error)
 }
 
 type AgentStore struct {
@@ -29,8 +20,8 @@ func NewAgentStore(db database.Database) *AgentStore {
 	}
 }
 
-func (s AgentStore) AddAgent(data *AgentStoreData) (*AgentStoreData, error) {
-	var agent = &AgentStoreData{}
+func (s AgentStore) AddAgent(data *dtos.AgentMongoDto) (*dtos.AgentMongoDto, error) {
+	var agent = &dtos.AgentMongoDto{}
 	cursor, err := s.database.Insert(data)
 	if err != nil {
 		return nil, err
@@ -44,9 +35,9 @@ func (s AgentStore) AddAgent(data *AgentStoreData) (*AgentStoreData, error) {
 	return agent, err
 }
 
-func (s AgentStore) FindAgentByEmailOrPhone(data *AgentStoreData) (*AgentStoreData, error) {
-	var agent = &AgentStoreData{}
-	filter := data.toEmailOrPhoneFilter()
+func (s AgentStore) FindAgentByEmailOrPhone(data *dtos.AgentMongoDto) (*dtos.AgentMongoDto, error) {
+	var agent = &dtos.AgentMongoDto{}
+	filter := data.ToEmailOrPhoneFilter()
 	cursor := s.database.FindOne(filter)
 
 	err := cursor.Decode(agent)
@@ -57,12 +48,28 @@ func (s AgentStore) FindAgentByEmailOrPhone(data *AgentStoreData) (*AgentStoreDa
 	return agent, err
 }
 
-func (s AgentStore) Find(id string) (*AgentStoreData, error) {
-	var agent = &AgentStoreData{}
+func (s AgentStore) Find(id string) (*dtos.AgentMongoDto, error) {
+	var agent = &dtos.AgentMongoDto{}
 	err := s.database.FindOneByID(id).Decode(agent)
 	if err != nil {
 		return nil, err
 	}
 
 	return agent, nil
+}
+
+func (s AgentStore) UpdateKyc(agentId string, input *dtos.KycDto) (*dtos.AgentDto, error) {
+	data := input.ToKycMongoDto().ToBson()
+	cursor, err := s.database.UpdateOneById(agentId, bson.M{"$set": bson.M{"kyc": data}})
+	if err != nil {
+		return nil, err
+	}
+
+	var agent = &dtos.AgentMongoDto{}
+	err = cursor.Decode(agent)
+	if err != nil {
+		return nil, err
+	}
+
+	return agent.ToAgentDto(), nil
 }

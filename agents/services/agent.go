@@ -7,14 +7,14 @@ import (
 	"global.p2p.api/app/notification"
 )
 
-type AgentService struct {
+type Agent struct {
 	database       *repositories.AgentStore
 	messageSender  notification.ContractMessageSender
 	welcomeMessage *messages.Welcome
 }
 
-func NewAgentService(ds *repositories.AgentStore, sender notification.ContractMessageSender, wm *messages.Welcome) *AgentService {
-	return &AgentService{
+func NewAgentService(ds *repositories.AgentStore, sender notification.ContractMessageSender, wm *messages.Welcome) *Agent {
+	return &Agent{
 		database:       ds,
 		messageSender:  sender,
 		welcomeMessage: wm,
@@ -22,7 +22,7 @@ func NewAgentService(ds *repositories.AgentStore, sender notification.ContractMe
 }
 
 
-func (as *AgentService) RegisterAgent(agentData *dtos.AgentDto) (*dtos.AgentDto, error) {
+func (as *Agent) RegisterAgent(agentData *dtos.AgentDto) (*dtos.AgentDto, error) {
 	err := agentData.HashPassword()
 	if err != nil {
 		return nil, err
@@ -35,11 +35,12 @@ func (as *AgentService) RegisterAgent(agentData *dtos.AgentDto) (*dtos.AgentDto,
 	}
 
 	as.welcomeMessage.SetTo(agent)
-	as.messageSender.Send(as.welcomeMessage)
+	_ = as.messageSender.Send(as.welcomeMessage)
+
 	return agent, nil
 }
 
-func (as *AgentService) addAgent(agentData *dtos.AgentDto) (*dtos.AgentDto, error) {
+func (as *Agent) addAgent(agentData *dtos.AgentDto) (*dtos.AgentDto, error) {
 	storeData := agentData.ToAgentStoreData()
 	storeAgent, err := as.database.AddAgent(storeData)
 	if err != nil {

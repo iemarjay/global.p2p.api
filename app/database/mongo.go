@@ -45,7 +45,7 @@ func (db *MongoDatabase) Table(name string) Database {
 	return db
 }
 
-func (db MongoDatabase) Insert(data interface{}) (*mongo.SingleResult, error) {
+func (db MongoDatabase) Insert(data interface{}) (DbDecoder, error) {
 	ior, err := db.collection.InsertOne(context.Background(), data)
 	if err != nil {
 		return nil, err
@@ -56,17 +56,34 @@ func (db MongoDatabase) Insert(data interface{}) (*mongo.SingleResult, error) {
 	return db.findOneByID(insertedID), err
 }
 
-func (db *MongoDatabase) FindOneByID(id string) *mongo.SingleResult {
+func (db *MongoDatabase) FindOneByID(id string) DbDecoder {
 	objectId, _ := primitive.ObjectIDFromHex(id)
 	return db.findOneByID(objectId)
 }
 
-func (db *MongoDatabase) findOneByID(id primitive.ObjectID) *mongo.SingleResult {
+func (db *MongoDatabase) findOneByID(id primitive.ObjectID) DbDecoder {
 	result := db.collection.FindOne(context.Background(), bson.M{"_id": id})
 	return result
 }
 
-func (db *MongoDatabase) FindOne(filter interface{}) *mongo.SingleResult {
+func (db *MongoDatabase) UpdateOneById(id string, data interface{}) (DbDecoder, error) {
+	objectId, _ := primitive.ObjectIDFromHex(id)
+	return db.UpdateOne(bson.M{"_id": objectId}, data)
+}
+
+func (db *MongoDatabase) UpdateOne(filter bson.M, data interface{}) (DbDecoder, error) {
+	result, err := db.collection.UpdateOne(context.Background(), filter, data)
+
+	_ = result.UpsertedID
+	if err != nil {
+		return nil, err
+	}
+
+
+	return db.FindOne(filter), nil
+}
+
+func (db *MongoDatabase) FindOne(filter interface{}) DbDecoder {
 	result := db.collection.FindOne(context.Background(), filter)
 	return result
 }
