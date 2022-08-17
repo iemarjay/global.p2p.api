@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"global.p2p.api/agents"
 	"global.p2p.api/app"
+	"global.p2p.api/invoices"
 	"log"
 )
 
@@ -13,9 +14,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	app := app.New(env, echo.New())
+	a := app.New(env, echo.New())
 
-	app.EnableModule(agents.New())
+	a.EnableModule(agents.New())
+	a.EnableModule(invoices.New())
 
-	app.StartServer()
+	a.StartServer()
 }

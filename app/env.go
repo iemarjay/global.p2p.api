@@ -10,15 +10,13 @@ const APP_PORT = "APP_PORT"
 const APP_BASE_URL = "APP_BASE_URL"
 
 const PUBLIC_ROOT_DIR = "PUBLIC_ROOT_DIR"
-const PUBLIC_ROOT_DIR_VALUE = "resources/public"
+const DEFAULT_PUBLIC_ROOT_DIR = "resources/public"
 
 const PUBLIC_PATH_PREFIX = "PUBLIC_PATH_PREFIX"
-const PUBLIC_PATH_PREFIX_VALUE = "public"
+const DEFAULT_PUBLIC_PATH_PREFIX = "public"
 
 const DATABASE_URL = "DATABASE_URL"
 const DATABASE_NAME = "DATABASE_NAME"
-
-
 
 func (env *Env) Set(value map[string]string) {
 	env.value = value

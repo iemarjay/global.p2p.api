@@ -38,8 +38,8 @@ func (app Gp2p) Database() database2.Database {
 
 func (app Gp2p) FileSystem() *fileStorage.FileStorage {
 	baseUrl := app.env.Get(APP_BASE_URL)
-	rootDir := app.env.GetOrDefault(PUBLIC_ROOT_DIR, PUBLIC_ROOT_DIR_VALUE)
-	opts := fileStorage.NewLocalDiskOpts(rootDir, baseUrl, app.env.GetOrDefault(PUBLIC_PATH_PREFIX, PUBLIC_PATH_PREFIX_VALUE))
+	rootDir := app.env.GetOrDefault(PUBLIC_ROOT_DIR, DEFAULT_PUBLIC_ROOT_DIR)
+	opts := fileStorage.NewLocalDiskOpts(rootDir, baseUrl, app.env.GetOrDefault(PUBLIC_PATH_PREFIX, DEFAULT_PUBLIC_PATH_PREFIX))
 	d := fileStorage.NewPublicDisk(opts)
 
 	return fileStorage.NewFileSystem(d)
@@ -47,8 +47,8 @@ func (app Gp2p) FileSystem() *fileStorage.FileStorage {
 
 func (app Gp2p) StartServer() {
 	address := ":" + app.env.GetOrDefault(APP_PORT, "8001")
-	app.echo.Static(app.env.GetOrDefault(PUBLIC_PATH_PREFIX, PUBLIC_PATH_PREFIX_VALUE),
-		app.env.GetOrDefault(PUBLIC_ROOT_DIR, PUBLIC_ROOT_DIR_VALUE))
+	app.echo.Static(app.env.GetOrDefault(PUBLIC_PATH_PREFIX, DEFAULT_PUBLIC_PATH_PREFIX),
+		app.env.GetOrDefault(PUBLIC_ROOT_DIR, DEFAULT_PUBLIC_ROOT_DIR))
 
 	//app.echo.GET("/", func (c echo.Context) error {
 	//	return c.JSON(200, app.echo.Routes())
