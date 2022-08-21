@@ -10,7 +10,7 @@ import (
 type (
 	AgentVerification struct {
 		database            *repositories.AgentStore
-		verificationMessage  *messages.Verification
+		verificationMessage *messages.Verification
 		otp                 *helpers.OtpGenerator
 	}
 
@@ -24,12 +24,12 @@ func NewAgentVerificationService(ds *repositories.AgentStore, vm *messages.Verif
 	otp *helpers.OtpGenerator) *AgentVerification {
 	return &AgentVerification{
 		database:            ds,
-		verificationMessage:  vm,
+		verificationMessage: vm,
 		otp:                 otp,
 	}
 }
 
-func (avs *AgentVerification) SendAgentVerificationCode(input *dtos.AgentVerificationDTO) error {
+func (avs AgentVerification) SendAgentVerificationCode(input *dtos.AgentVerificationDTO) error {
 	sa, err := avs.database.Find(input.ID)
 	if err != nil {
 		return err
@@ -52,7 +52,7 @@ func (avs AgentVerification) VerifyAgent(input *dtos.AgentVerificationDTO) (erro
 
 	agent := dtos.NewAgentServiceDataFromAgentStoreData(sa)
 	ve := &verificationError{
-		Email: avs.validateMailToken(agent, input.Email),
+		Email: avs.validateMailToken(input.Email, agent),
 		Phone: avs.validatePhoneToken(input.Phone, agent),
 	}
 
@@ -63,12 +63,12 @@ func (avs AgentVerification) VerifyAgent(input *dtos.AgentVerificationDTO) (erro
 	return nil, nil
 }
 
-func (avs AgentVerification) validatePhoneToken(phone string, agent *dtos.AgentDto) string {
+func (avs AgentVerification) validatePhoneToken(token string, agent *dtos.AgentDto) string {
 	var msg string
-	if phone == "" {
+	if token == "" {
 		msg = ""
 	}
-	phonePassed := avs.otp.Validate(agent.OtpKeyForPhone(), phone)
+	phonePassed := avs.otp.Validate(agent.OtpKeyForPhone(), token)
 	if phonePassed {
 		msg = "success"
 	} else {
@@ -77,12 +77,12 @@ func (avs AgentVerification) validatePhoneToken(phone string, agent *dtos.AgentD
 	return msg
 }
 
-func (avs AgentVerification) validateMailToken(agent *dtos.AgentDto, email string) string {
-	if email == "" {
+func (avs AgentVerification) validateMailToken(token string, agent *dtos.AgentDto) string {
+	if token == "" {
 		return ""
 	}
 
-	emailPassed := avs.otp.Validate(agent.OtpKeyForEmail(), email)
+	emailPassed := avs.otp.Validate(agent.OtpKeyForEmail(), token)
 	var msg string
 	if emailPassed {
 		msg = "success"
