@@ -3,19 +3,21 @@ package main
 import (
 	"github.com/labstack/echo/v4"
 	"global.p2p.api/agents"
-	"global.p2p.api/gp2p"
+	"global.p2p.api/app"
+	"global.p2p.api/invoices"
 	"log"
 )
 
 func main() {
-	env, err := gp2p.NewEnv(".env")
+	env, err := app.NewEnv(".env")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	app := gp2p.New(env, echo.New())
+	a := app.New(env, echo.New())
 
-	app.EnableModule(agents.New())
+	a.EnableModule(agents.New())
+	a.EnableModule(invoices.New())
 
-	app.StartServer()
+	a.StartServer()
 }

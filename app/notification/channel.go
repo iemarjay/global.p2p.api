@@ -1,7 +1,7 @@
 package notification
 
 type Channel interface {
-	Send()
+	Send() error
 }
 
 type MailChannel interface {
